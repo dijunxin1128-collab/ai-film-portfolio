@@ -12,7 +12,6 @@
       mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/>',
       copy: '<rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',
       film: '<rect x="3" y="5" width="18" height="14" rx="1"/><path d="M7 5v14M17 5v14M3 10h4m-4 4h4m10-4h4m-4 4h4"/>',
-      download: '<path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/>',
       up: '<path d="M12 20V4m-6 6 6-6 6 6"/>'
     };
     return `<svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.arrow}</svg>`;
@@ -31,7 +30,6 @@
     const link = externalLink(project, "button button-outline");
     return link ? `<div class="project-actions">${link}</div>` : "";
   };
-  const resumeControl = () => `<span class="resume-control"><button type="button" class="button button-muted" disabled>${icon("download")}<span>${escape(config.resume.available ? ui.resumeChecking : ui.resumeUnavailable)}</span></button></span>`;
   const tags = (items) => items?.length ? `<ul class="tags">${items.map((tag) => `<li>${escape(tag)}</li>`).join("")}</ul>` : "";
   const mediaFrame = (project, compact = false) => {
     const available = project.hasLocalVideo && Boolean(validUrl(project.videoPath));
@@ -84,12 +82,12 @@
     </div></header>
     <main>
       <section id="home" class="hero page-width" aria-labelledby="hero-name">
-        <div class="hero-main"><p class="hero-kicker"><span></span>${escape(ui.portfolioLabel)}</p><h1 id="hero-name">${escape(profile.name)}</h1><p class="hero-role">${escape(profile.role)}</p><p class="hero-directions">${escape(profile.directions)}</p><p class="hero-introduction">${escape(profile.shortIntroduction)}</p><div class="hero-actions"><a class="button button-primary" href="#sea-survival">${escape(ui.browse)}${icon("down")}</a>${resumeControl()}</div></div>
+        <div class="hero-main"><p class="hero-kicker"><span></span>${escape(ui.portfolioLabel)}</p><h1 id="hero-name">${escape(profile.name)}</h1><p class="hero-role">${escape(profile.role)}</p><p class="hero-directions">${escape(profile.directions)}</p><p class="hero-introduction">${escape(profile.shortIntroduction)}</p><div class="hero-actions"><a class="button button-primary" href="#sea-survival">${escape(ui.browse)}${icon("down")}</a></div></div>
         <aside class="work-index" aria-label="${escape(ui.indexTitle)}"><p class="index-label">${escape(ui.indexTitle)}</p>${projects.map((project) => `<a href="#${escape(project.id)}"><span><small>${escape(project.categoryShort)}</small><strong>${escape(project.indexTitle)}</strong></span>${icon("external")}</a>`).join("")}</aside>
         <div class="about-row"><div class="about-caption">${escape(ui.about)}</div><div class="about-content"><details><summary><span>${escape(ui.showAbout)}</span>${icon("down")}</summary><p>${escape(profile.introduction)}</p></details>${tags(profile.skills)}</div></div>
       </section>
       ${projects.map((project) => project.type === "collection" ? collectionSection(project) : projectSection(project)).join("")}
-      <section id="contact" class="contact-section" aria-labelledby="contact-heading"><div class="contact-inner page-width"><div><p class="section-kicker">${escape(ui.contactLabel)}</p><h2 id="contact-heading">${escape(ui.contactTitle)}</h2><p class="contact-intro">${escape(ui.contactIntro)}</p><a class="email-address" href="mailto:${escape(profile.email)}">${escape(profile.email)}${icon("external")}</a><div class="contact-actions"><a class="button button-primary" href="mailto:${escape(profile.email)}">${icon("mail")}${escape(ui.emailAction)}</a><button class="button button-outline copy-email" type="button">${icon("copy")}<span>${escape(ui.copyEmail)}</span></button></div><p class="copy-status" role="status" aria-live="polite"></p></div><div class="resume-panel"><span class="resume-name">${escape(profile.name)}</span><p>${escape(profile.role)}</p>${resumeControl()}<p class="resume-note">${escape(config.resume.available ? "" : ui.resumeNote)}</p></div></div></section>
+      <section id="contact" class="contact-section" aria-labelledby="contact-heading"><div class="contact-inner page-width"><div><p class="section-kicker">${escape(ui.contactLabel)}</p><h2 id="contact-heading">${escape(ui.contactTitle)}</h2><p class="contact-intro">${escape(ui.contactIntro)}</p><a class="email-address" href="mailto:${escape(profile.email)}">${escape(profile.email)}${icon("external")}</a><div class="contact-actions"><a class="button button-primary" href="mailto:${escape(profile.email)}">${icon("mail")}${escape(ui.emailAction)}</a><button class="button button-outline copy-email" type="button">${icon("copy")}<span>${escape(ui.copyEmail)}</span></button></div><p class="copy-status" role="status" aria-live="polite"></p></div><div class="contact-signature"><span class="contact-name">${escape(profile.name)}</span><p>${escape(profile.role)}</p></div></div></section>
     </main>
     <footer class="site-footer page-width"><p>${escape(ui.footer)}</p><a href="#home">${escape(ui.backTop)}${icon("up")}</a></footer>`;
 
@@ -193,35 +191,4 @@
     catch { status.textContent = ui.copyError; }
   });
 
-  async function setupResume() {
-    const path = validUrl(config.resume.path);
-    if (!config.resume.available || !path) return;
-    let exists = true;
-    // HTTP 模式核查文件头，避免配置错误产生空下载或把 404 HTML 当成简历。
-    if (location.protocol !== "file:") {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
-      try {
-        const response = await fetch(path, { headers: { Range: "bytes=0-4" }, signal: controller.signal });
-        const reader = response.body?.getReader();
-        let first = [];
-        if (reader) {
-          while (first.length < 5) {
-            const chunk = await reader.read();
-            if (chunk.done) break;
-            first.push(...chunk.value.slice(0, 5 - first.length));
-          }
-          await reader.cancel();
-        }
-        exists = response.ok && String.fromCharCode(...first) === "%PDF-";
-      } catch { exists = false; }
-      finally { clearTimeout(timeout); }
-    }
-    document.querySelectorAll(".resume-control").forEach((control) => {
-      if (exists) control.innerHTML = `<a class="button button-outline" href="${escape(path)}" download="${escape(config.resume.downloadName)}">${icon("download")}${escape(ui.download)}</a>`;
-      else control.querySelector("button span").textContent = ui.resumeUnavailable;
-    });
-    if (!exists) document.querySelector(".resume-note").textContent = ui.resumeNote;
-  }
-  setupResume();
 })();

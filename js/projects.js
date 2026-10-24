@@ -15,21 +15,12 @@ window.PORTFOLIO = {
     shortIntroduction: "从角色与场景资产构建，到镜头生成与后期合成；以完整的制作流程，连接影视创作与技术实践。",
     skills: ["角色资产构建", "LoRA 模型训练", "镜头预可视化", "AI 视频生成", "后期合成"]
   },
-  resume: {
-    path: "assets/documents/di-junxin-resume.pdf",
-    available: true,
-    downloadName: "邸骏昕_个人简历.pdf"
-  },
   ui: {
     pageTitle: "邸骏昕 · AI 影视作品集",
     pageDescription: "邸骏昕个人影视作品集：AI 影视创作、生成式视频工作流与创作软件研发。",
     brandCaption: "个人影视作品集",
     portfolioLabel: "影像创作与技术实践",
     browse: "浏览作品",
-    download: "下载简历",
-    resumeUnavailable: "PDF 简历待补充",
-    resumeChecking: "正在确认简历…",
-    resumeNote: "正式 PDF 简历尚未提供，可通过邮箱联系。",
     about: "关于我",
     indexTitle: "作品目录",
     responsibility: "个人职责",
@@ -53,7 +44,7 @@ window.PORTFOLIO = {
     mediaLabel: "工作流与教学",
     contactTitle: "期待下一次创作。",
     contactIntro: "关于影视制作、AI 创作与工作机会，欢迎通过邮箱联系。",
-    contactLabel: "联系与简历",
+    contactLabel: "联系我",
     emailAction: "邮件联系",
     copyEmail: "复制邮箱",
     copied: "邮箱已复制",

@@ -62,9 +62,7 @@ svg { flex-shrink: 0; }
 .button-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 .button-outline { background: transparent; color: var(--text); border-color: #5b5e51; }
 .button-outline:hover { border-color: var(--accent); background: #262820; }
-.button-muted { border-color: var(--line); background: transparent; color: var(--subtle); }
 .button .icon { width: 17px; height: 17px; }
-.resume-control { display: inline-flex; }
 .work-index { padding-top: 10px; align-self: center; }
 .index-label { font-size: 12px; color: var(--subtle); margin-bottom: 12px; }
 .work-index > a { display: flex; align-items: center; justify-content: space-between; min-height: 86px; padding: 15px 4px 15px 0; border-bottom: 1px solid var(--line); gap: 12px; transition: padding 180ms ease; }
@@ -157,11 +155,9 @@ details p { color: var(--muted); font-size: 14px; line-height: 1.9; max-width: 6
 .email-address .icon { color: var(--accent); }
 .contact-actions { margin-top: 24px; }
 .copy-status { min-height: 24px; margin-top: 10px; color: var(--accent); font-size: 12px; }
-.resume-panel { border-left: 1px solid #414638; padding-left: 36px; margin-block: 15px 28px; align-self: stretch; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
-.resume-name { font-size: 19px; }
-.resume-panel > p { color: var(--muted); font-size: 12px; margin-top: 6px; }
-.resume-panel .resume-control { margin-top: 25px; }
-.resume-panel .resume-note { color: var(--subtle); margin-top: 14px; max-width: 23em; font-size: 11px; }
+.contact-signature { border-left: 1px solid #414638; padding-left: 36px; margin-block: 15px 28px; align-self: stretch; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
+.contact-name { font-size: 19px; }
+.contact-signature > p { color: var(--muted); font-size: 12px; margin-top: 6px; }
 .site-footer { display: flex; justify-content: space-between; align-items: center; gap: 20px; min-height: 88px; color: var(--subtle); font-size: 11px; }
 .site-footer a { display: inline-flex; min-height: 44px; gap: 10px; align-items: center; }
 .site-footer a:hover { color: var(--text); }
@@ -226,7 +222,7 @@ details p { color: var(--muted); font-size: 14px; line-height: 1.9; max-width: 6
   .media-card .placeholder-title { font-size: 17px; }
   .media-card .placeholder-icon { display: none; }
   .contact-inner { grid-template-columns: 1.5fr 1fr; gap: 28px; }
-  .resume-panel { padding-left: 24px; }
+  .contact-signature { padding-left: 24px; }
   .contact-section { padding-block: 38px 26px; }
 }
 @media (max-width: 580px) {
@@ -275,9 +271,7 @@ details p { color: var(--muted); font-size: 14px; line-height: 1.9; max-width: 6
   .contact-inner h2 { font-size: 33px; }
   .contact-intro { font-size: 14px; }
   .email-address { font-size: 24px; }
-  .resume-panel { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; padding-top: 25px; margin-top: 0; margin-bottom: 10px; }
-  .resume-panel .resume-control { margin-top: 18px; }
-  .resume-panel .resume-note { max-width: none; font-size: 12px; }
+  .contact-signature { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; padding-top: 25px; margin-top: 0; margin-bottom: 10px; }
   .site-footer { min-height: 80px; gap: 12px; font-size: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
