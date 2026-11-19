@@ -1,194 +1,165 @@
 (() => {
-  "use strict";
+  'use strict';
   const config = window.PORTFOLIO;
   if (!config) return;
-  const { profile, ui, projects } = config;
-  const escape = (value = "") => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
-  const icon = (name) => {
-    const paths = {
-      arrow: '<path d="M5 12h14m-6-6 6 6-6 6"/>',
-      external: '<path d="M7 17 17 7M7 7h10v10"/>',
-      down: '<path d="M12 4v16m-6-6 6 6 6-6"/>',
-      mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/>',
-      copy: '<rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',
-      film: '<rect x="3" y="5" width="18" height="14" rx="1"/><path d="M7 5v14M17 5v14M3 10h4m-4 4h4m10-4h4m-4 4h4"/>',
-      up: '<path d="M12 20V4m-6 6 6-6 6 6"/>'
-    };
-    return `<svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.arrow}</svg>`;
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  const works = config.projects.filter(item => item.type !== 'collection');
+  const episodes = config.projects.find(item => item.id === 'media').items;
+  let selectedEpisode = 0;
+  let modalReturnFocus = null;
+  const external = (item, className='mini-link') => item.externalUrl ? `<a class="${className}" href="${esc(item.externalUrl)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(item.title)}：前往原发布链接（新标签页）">${esc(config.ui.externalLinkLabel)}</a>` : '';
+  const video = (item, className='') => item.hasLocalVideo && item.videoPath ? `<video class="${className}" controls controlsList="nodownload" playsinline preload="metadata" ${item.hasPoster && item.posterPath ? `poster="${esc(item.posterPath)}"` : ''} src="${esc(item.videoPath)}" aria-label="${esc(item.title)}视频">您的浏览器不支持视频播放。</video>` : '';
+  const visual = (item, type='work') => {
+    const hasPoster = item.hasPoster && item.posterPath;
+    const label = hasPoster ? `<img src="${esc(item.posterPath)}" alt="${esc(item.title)}封面" loading="lazy">` : `<div class="empty-visual"><span>影像素材待接入</span></div>`;
+    const canPlay = item.hasLocalVideo && item.videoPath;
+    return `<div class="${type === 'software' ? 'software-visual' : 'work-visual'}">${label}<span class="overlay-label">${type === 'software' ? 'CREATIVE SOFTWARE' : 'LIVE ACTION'} / ${esc(item.number)}</span>${canPlay ? `<button type="button" class="hover-play" data-open="${esc(item.id)}" aria-label="查看${esc(item.title)}视频">▶</button>` : `<button type="button" class="visual-detail" data-open="${esc(item.id)}">查看项目详情 ↗</button>`}</div>`;
   };
-  const validUrl = (value, external = false) => {
-    if (!value || typeof value !== "string") return "";
-    if (/^https:\/\//i.test(value)) return value;
-    if (external || /^(?:[a-z][a-z\d+.-]*:|\/|\\)/i.test(value)) return "";
-    return value;
-  };
-  const externalLink = (project, className = "text-link") => {
-    const url = validUrl(project.externalUrl, true);
-    return url ? `<a class="${className}" href="${escape(url)}" target="_blank" rel="noopener noreferrer" aria-label="${escape(project.title + '：' + ui.externalLinkLabel + '（新标签页）')}">${escape(ui.externalLinkLabel)}${icon("external")}</a>` : "";
-  };
-  const projectActions = (project) => {
-    const link = externalLink(project, "button button-outline");
-    return link ? `<div class="project-actions">${link}</div>` : "";
-  };
-  const tags = (items) => items?.length ? `<ul class="tags">${items.map((tag) => `<li>${escape(tag)}</li>`).join("")}</ul>` : "";
-  const mediaFrame = (project, compact = false) => {
-    const available = project.hasLocalVideo && Boolean(validUrl(project.videoPath));
-    const poster = project.hasPoster ? validUrl(project.posterPath) : "";
-    const ratio = /^\d+(?:\.\d+)?\s*\/\s*\d+(?:\.\d+)?$/.test(project.aspectRatio) ? project.aspectRatio : "16 / 9";
-    return `<div class="media-block${compact ? " media-block-compact" : ""}">
-      <div class="media-frame" data-media="${escape(project.id)}" data-state="${available ? "ready" : "missing"}" style="--media-ratio:${escape(ratio)}">
-        <video id="video-${escape(project.id)}" controls controlsList="nodownload" playsinline preload="none" ${poster ? `poster="${escape(poster)}"` : ""} aria-label="${escape(project.title + ' · ' + ui.play)}" ${available ? `data-src="${escape(validUrl(project.videoPath))}"` : "hidden"}>${escape(ui.videoFallback)}</video>
-        <div class="media-placeholder" ${available ? "hidden" : ""}>
-          ${poster ? `<img class="placeholder-poster" src="${escape(poster)}" alt="${escape(project.title + '封面')}" loading="lazy">` : ""}
-          <div class="placeholder-content">
-            <span class="placeholder-icon">${icon("film")}</span>
-            <span class="placeholder-title">${escape(project.publishedTitle || project.title)}</span>
-            ${project.subtitle ? `<span class="placeholder-subtitle">${escape(project.subtitle)}</span>` : ""}
-            <p class="placeholder-status">${escape(ui.localPending)}</p>
-            <p class="placeholder-hint">${escape(project.externalUrl ? ui.remoteHint : ui.noRemoteHint)}</p>
-            <div class="placeholder-actions" hidden><button class="button button-outline retry-video" type="button" hidden>${escape(ui.retry)}</button></div>
-          </div>
-        </div>
-      </div>
-      <div class="media-caption"><span>${escape(project.specifications || project.subtitle || project.category)}</span><span class="media-state">${available ? `<span class="status-dot"></span>${escape(ui.inlineVideo)}` : escape(ui.videoUnavailable)}</span></div>
-    </div>`;
-  };
-  const projectSection = (project) => `<section class="project-section page-width" id="${escape(project.id)}" aria-labelledby="heading-${escape(project.id)}">
-    <div class="section-heading"><div><p class="section-kicker">${escape(project.category)}</p><h2 id="heading-${escape(project.id)}">${escape(project.title)}</h2></div>${tags(project.tags)}</div>
-    <div class="project-layout">
-      ${mediaFrame(project)}
-      <div class="project-details">
-        ${project.publishedTitle ? `<div class="published-work"><span class="detail-label">${escape(ui.publishedTitle)}</span><h3>${escape(project.publishedTitle)}</h3><p>${escape(project.subtitle)}</p></div>` : ""}
-        <p class="project-description">${escape(project.description)}</p>
-        <div class="responsibilities"><h3 class="detail-label">${escape(ui.responsibility)}</h3><p>${escape(project.responsibilities)}</p></div>
-        ${project.tools ? `<div class="tools"><h3 class="detail-label">${escape(ui.tools)}</h3><p>${escape(project.tools.join(" / "))}</p></div>` : ""}
-        ${project.awards ? `<div class="awards"><h3 class="detail-label">${escape(ui.awards)}</h3><ul>${project.awards.map((item) => `<li><strong>${escape(item.award)}</strong><span>${escape(item.competition)}</span></li>`).join("")}</ul></div>` : ""}
-        ${projectActions(project)}
-      </div>
-    </div>
-  </section>`;
-  const collectionSection = (project) => `<section class="project-section media-section page-width" id="${escape(project.id)}" aria-labelledby="heading-media">
-    <div class="section-heading"><div><p class="section-kicker">${escape(ui.mediaLabel)}</p><h2 id="heading-media">${escape(ui.mediaTitle)}</h2></div><p class="section-description">${escape(ui.mediaSubtitle)}</p></div>
-    <div class="media-grid">${project.items.map((item) => `<article class="media-card" aria-labelledby="heading-${escape(item.id)}">${mediaFrame(item, true)}<div class="card-copy"><h3 id="heading-${escape(item.id)}">${escape(item.title)}</h3><p>${escape(item.description)}</p>${projectActions(item)}</div></article>`).join("")}</div>
-  </section>`;
-  document.title = ui.pageTitle;
-  document.querySelector('meta[name="description"]').content = ui.pageDescription;
-  document.querySelector("#app").innerHTML = `
-    <a class="skip-link" href="#sea-survival">${escape(ui.skip)}</a>
-    <header class="site-header"><div class="header-inner page-width">
-      <a class="brand" href="#home"><span class="brand-mark" aria-hidden="true">${icon("film")}</span><span><strong>${escape(profile.name)}</strong><span class="brand-caption">${escape(ui.brandCaption)}</span></span></a>
-      <button class="menu-toggle" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="${escape(ui.menu)}"><span></span><span></span></button>
-      <nav id="main-nav" class="main-nav" aria-label="${escape(ui.navLabel)}">${config.navigation.map((item, index) => `<a href="#${escape(item.id)}"${index === 0 ? ' aria-current="location"' : ""}>${escape(item.label)}</a>`).join("")}</nav>
-    </div></header>
-    <main>
-      <section id="home" class="hero page-width" aria-labelledby="hero-name">
-        <div class="hero-main"><p class="hero-kicker"><span></span>${escape(ui.portfolioLabel)}</p><h1 id="hero-name">${escape(profile.name)}</h1><p class="hero-role">${escape(profile.role)}</p><p class="hero-directions">${escape(profile.directions)}</p><p class="hero-introduction">${escape(profile.shortIntroduction)}</p><div class="hero-actions"><a class="button button-primary" href="#sea-survival">${escape(ui.browse)}${icon("down")}</a></div></div>
-        <aside class="work-index" aria-label="${escape(ui.indexTitle)}"><p class="index-label">${escape(ui.indexTitle)}</p>${projects.map((project) => `<a href="#${escape(project.id)}"><span><small>${escape(project.categoryShort)}</small><strong>${escape(project.indexTitle)}</strong></span>${icon("external")}</a>`).join("")}</aside>
-        <div class="about-row"><div class="about-caption">${escape(ui.about)}</div><div class="about-content"><details><summary><span>${escape(ui.showAbout)}</span>${icon("down")}</summary><p>${escape(profile.introduction)}</p></details>${tags(profile.skills)}</div></div>
-      </section>
-      ${projects.map((project) => project.type === "collection" ? collectionSection(project) : projectSection(project)).join("")}
-      <section id="contact" class="contact-section" aria-labelledby="contact-heading"><div class="contact-inner page-width"><div><p class="section-kicker">${escape(ui.contactLabel)}</p><h2 id="contact-heading">${escape(ui.contactTitle)}</h2><p class="contact-intro">${escape(ui.contactIntro)}</p><a class="email-address" href="mailto:${escape(profile.email)}">${escape(profile.email)}${icon("external")}</a><div class="contact-actions"><a class="button button-primary" href="mailto:${escape(profile.email)}">${icon("mail")}${escape(ui.emailAction)}</a><button class="button button-outline copy-email" type="button">${icon("copy")}<span>${escape(ui.copyEmail)}</span></button></div><p class="copy-status" role="status" aria-live="polite"></p></div><div class="contact-signature"><span class="contact-name">${escape(profile.name)}</span><p>${escape(profile.role)}</p></div></div></section>
-    </main>
-    <footer class="site-footer page-width"><p>${escape(ui.footer)}</p><a href="#home">${escape(ui.backTop)}${icon("up")}</a></footer>`;
+  const card = (item, kind) => `<article class="work-card ${kind === 'software' ? 'software-card' : ''} reveal">
+    ${visual(item,kind)}
+    <div class="card-meta"><span>${esc(item.note)}</span><span>${kind === 'software' ? 'SOFTWARE' : 'FILM'} / ${esc(item.number)}</span></div>
+    <h3 class="card-title">${esc(item.title)}</h3>
+    <p class="card-desc">${esc(item.subtitle)}。${esc(item.summary || item.description)}</p>
+    ${item.tools?.length ? `<div class="card-tools">${item.tools.map(tool => `<span>${esc(tool)}</span>`).join('')}</div>` : ''}
+    <div class="card-bottom"><span class="role">${kind === 'software' ? 'PRODUCT' : 'FILM'} / ${esc(item.number)}</span>${item.externalUrl ? external(item) : `<button type="button" class="mini-link" data-open="${esc(item.id)}">了解项目 →</button>`}</div>
+  </article>`;
+  const codeZero = works.find(item => item.id === 'code-zero');
+  const textOnly = item => `<article class="work-card reveal text-only-work" aria-label="${esc(item.title)} · 文字项目介绍"><div class="text-only-upper">
+    <span class="text-only-eyebrow">01 / LIVE ACTION · PROJECT RECORD</span>
+    <h3>${esc(item.title)}</h3><p class="text-only-subtitle">${esc(item.subtitle)}</p>
+    <dl class="text-only-fields"><div class="text-only-field"><dt>项目简介</dt><dd>待补充</dd></div><div class="text-only-field"><dt>个人职责</dt><dd>${esc(item.responsibilities)}</dd></div><div class="text-only-field"><dt>视频生成工具</dt><dd>${esc(item.tools.join(' · '))}</dd></div></dl>
+    </div><button type="button" class="text-only-action" data-open="${esc(item.id)}">查看文字介绍 <span aria-hidden="true">→</span></button></article>`;
+  $('#filmsGrid').innerHTML = [textOnly(codeZero),...works.filter(item => item.type === 'film' && !item.textOnly).map(item => card(item,'film'))].join('');
+  $('#softwareGrid').innerHTML = works.filter(item => item.type === 'software').map(item => card(item,'software')).join('');
 
-  const menu = document.querySelector(".menu-toggle");
-  const nav = document.querySelector(".main-nav");
-  const closeMenu = () => {
-    menu.setAttribute("aria-expanded", "false");
-    menu.setAttribute("aria-label", ui.menu);
-    nav.classList.remove("is-open");
-  };
-  menu.addEventListener("click", () => {
-    const open = menu.getAttribute("aria-expanded") !== "true";
-    menu.setAttribute("aria-expanded", String(open));
-    menu.setAttribute("aria-label", open ? ui.menuClose : ui.menu);
-    nav.classList.toggle("is-open", open);
-  });
-  nav.addEventListener("click", (event) => {
-    const link = event.target.closest("a");
-    if (!link) return;
-    closeMenu();
-    if (!link.getAttribute("href").startsWith("#")) return;
-    const section = document.querySelector(link.getAttribute("href"));
-    if (section) { section.tabIndex = -1; section.focus({ preventScroll: true }); }
-  });
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && menu.getAttribute("aria-expanded") === "true") { closeMenu(); menu.focus(); }
-  });
-  document.addEventListener("click", (event) => { if (!event.target.closest(".site-header")) closeMenu(); });
-  window.matchMedia("(min-width: 801px)").addEventListener?.("change", closeMenu);
-  const about = document.querySelector("details");
-  about.addEventListener("toggle", () => { about.querySelector("summary span").textContent = about.open ? ui.hideAbout : ui.showAbout; });
+  const fox = works.find(item => item.type === 'animation');
+  $('.fox-copy h2').textContent = fox.title;
+  $('.fox-copy p').textContent = fox.description;
+  $('.award').innerHTML = (fox.awards || []).map(item => `<span>✦ ${esc(item.competition)} · ${esc(item.award)}</span>`).join('');
+  $('#foxMedia').innerHTML = video(fox,'fox-video');
+  $('.fox-copy').insertAdjacentHTML('beforeend',external(fox));
 
-  // 统一隐藏原生下载入口；也覆盖后续通过 DOM 动态新增的播放器。
-  const hideVideoDownload = (root) => {
-    if (!(root instanceof Element)) return;
-    if (root.matches("video")) root.setAttribute("controlsList", "nodownload");
-    root.querySelectorAll("video").forEach((video) => video.setAttribute("controlsList", "nodownload"));
-  };
-  hideVideoDownload(document.documentElement);
-  new MutationObserver((records) => {
-    records.forEach((record) => record.addedNodes.forEach(hideVideoDownload));
-  }).observe(document.documentElement, { childList: true, subtree: true });
-
-  const videos = [...document.querySelectorAll("video")];
-  const items = projects.flatMap((project) => project.items || [project]);
-  const attachSource = (video) => {
-    if (video.dataset.src && !video.getAttribute("src")) {
-      video.preload = "metadata";
-      video.src = video.dataset.src;
-      video.load();
+  const stageMedia = $('#stageMedia');
+  const stageArt = $('#stageArt');
+  const stageCenter = stageMedia.querySelector('.stage-center');
+  const setEpisode = (index, scroll=true) => {
+    selectedEpisode = Math.max(0,Math.min(episodes.length-1,index));
+    const item = episodes[selectedEpisode];
+    stageMedia.querySelector('video')?.pause();
+    stageMedia.querySelector('video')?.remove();
+    const hasVideo = item.hasLocalVideo && item.videoPath;
+    if (hasVideo) {
+      stageMedia.insertAdjacentHTML('beforeend',video(item,'stage-video'));
+      stageArt.hidden = true;
+      stageCenter.hidden = true;
+    } else {
+      stageArt.hidden = false;
+      stageCenter.hidden = false;
+      $('#stageNum').textContent = item.number;
+      $('#stageTitleArt').textContent = item.title;
     }
+    $('#stageKicker').textContent = `EPISODE ${item.number} / 06`;
+    $('#stageTitle').textContent = item.title;
+    $('#stageDesc').textContent = item.description;
+    $('#stageStatus').textContent = hasVideo ? '站内视频可播放' : '站内视频待接入';
+    const link = $('#stageExternal');
+    link.href = item.externalUrl;
+    link.setAttribute('aria-label',`${item.title}：前往原发布链接（新标签页）`);
+    $$('.ep-card').forEach((button,i) => {
+      button.classList.toggle('selected',i===selectedEpisode);
+      button.setAttribute('aria-pressed',String(i===selectedEpisode));
+    });
+    $('#episodePrev').disabled = selectedEpisode===0;
+    $('#episodeNext').disabled = selectedEpisode===episodes.length-1;
+    if(scroll) $(`.ep-card[data-episode="${selectedEpisode}"]`)?.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});
   };
-  const mediaObserver = "IntersectionObserver" in window ? new IntersectionObserver((entries) => {
-    entries.forEach((entry) => { if (entry.isIntersecting) { attachSource(entry.target); mediaObserver.unobserve(entry.target); } });
-  }, { rootMargin: "160px" }) : null;
-  videos.forEach((video) => {
-    const frame = video.closest(".media-frame");
-    const project = items.find((item) => item.id === frame.dataset.media);
-    video.addEventListener("play", () => videos.forEach((other) => { if (other !== video) other.pause(); }));
-    video.addEventListener("loadedmetadata", () => {
-      if (video.videoWidth && video.videoHeight) frame.style.setProperty("--media-ratio", `${video.videoWidth} / ${video.videoHeight}`);
-    });
-    video.addEventListener("error", () => {
-      if (!video.getAttribute("src")) return;
-      frame.dataset.state = "error";
-      video.hidden = true;
-      frame.querySelector(".media-placeholder").hidden = false;
-      frame.querySelector(".placeholder-status").textContent = ui.playbackError;
-      frame.querySelector(".placeholder-hint").textContent = project.externalUrl ? ui.playbackErrorHint : ui.playbackErrorNoRemote;
-      frame.querySelector(".placeholder-actions").hidden = false;
-      frame.querySelector(".retry-video").hidden = false;
-      frame.parentElement.querySelector(".media-state").textContent = ui.playbackError;
-    });
-    frame.querySelector(".retry-video").addEventListener("click", () => {
-      frame.dataset.state = "ready";
-      frame.querySelector(".media-placeholder").hidden = true;
-      video.hidden = false;
-      frame.parentElement.querySelector(".media-state").textContent = ui.inlineVideo;
-      video.load();
-      video.play().catch(() => { /* 原生控件仍可继续播放，网络/解码错误由 error 事件处理。 */ });
-    });
-    if (video.dataset.src) { if (mediaObserver) mediaObserver.observe(video); else attachSource(video); }
-  });
-  document.querySelectorAll(".placeholder-poster").forEach((image) => image.addEventListener("error", () => { image.hidden = true; }));
+  $('#episodeScroll').innerHTML = episodes.map((item,index) => `<button class="ep-card" type="button" data-episode="${index}" aria-label="切换到第${Number(item.number)}期：${esc(item.title)}" aria-pressed="false"><div class="ep-thumb"><b>${esc(item.number)}</b></div><div class="ep-label"><span>EP. ${esc(item.number)}</span><span>${item.hasLocalVideo ? '站内可播放' : '视频待接入'}</span></div><div class="ep-title">${esc(item.title)}</div></button>`).join('');
+  setEpisode(0,false);
+  $$('.ep-card').forEach(button => button.addEventListener('click',() => setEpisode(Number(button.dataset.episode),false)));
+  $('#episodePrev').addEventListener('click',() => setEpisode(selectedEpisode-1));
+  $('#episodeNext').addEventListener('click',() => setEpisode(selectedEpisode+1));
+  $('#scrollLeft').addEventListener('click',() => $('#episodeScroll').scrollBy({left:-460,behavior:'smooth'}));
+  $('#scrollRight').addEventListener('click',() => $('#episodeScroll').scrollBy({left:460,behavior:'smooth'}));
 
-  if ("IntersectionObserver" in window) {
-    const visible = new Map();
-    const sectionObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => visible.set(entry.target.id, entry.isIntersecting));
-      const active = config.navigation.find((item) => visible.get(item.id));
-      if (!active) return;
-      nav.querySelectorAll("a").forEach((link) => {
-        if (link.hash === `#${active.id}`) link.setAttribute("aria-current", "location"); else link.removeAttribute("aria-current");
-      });
-    }, { rootMargin: "-15% 0px -45% 0px", threshold: 0 });
-    document.querySelectorAll("main > section").forEach((section) => sectionObserver.observe(section));
-  }
-  document.querySelector(".copy-email").addEventListener("click", async () => {
-    const status = document.querySelector(".copy-status");
-    try { await navigator.clipboard.writeText(profile.email); status.textContent = ui.copied; }
-    catch { status.textContent = ui.copyError; }
+  const modal = $('#modal');
+  const modalStage = $('#modalStage');
+  const openModal = (id, trigger) => {
+    const item = works.find(project => project.id === id);
+    if(!item) return;
+    modalReturnFocus = trigger || document.activeElement;
+    $('#modalKicker').textContent = item.type === 'film' ? 'LIVE ACTION / FILM PROJECT' : item.type === 'software' ? 'SOFTWARE / PRODUCT' : 'ORIGINAL ANIMATION';
+    $('#modalTitle').textContent = item.title;
+    $('#modalDesc').textContent = item.textOnly ? '中剧 · 第1集。项目简介待补充。' : `${item.subtitle}。${item.description}`;
+    const facts = [];
+    if(item.responsibilities) facts.push(`<div class="project-fact"><span>个人职责</span><p>${esc(item.responsibilities)}</p></div>`);
+    if(item.tools?.length) facts.push(`<div class="project-fact"><span>${item.type === 'software' ? '开发工具' : '制作工具'}</span><p>${esc(item.tools.join(' · '))}</p></div>`);
+    if(item.awards?.length) facts.push(`<div class="project-fact"><span>获奖信息</span><p>${item.awards.map(award => `${esc(award.competition)}：${esc(award.award)}`).join('<br>')}</p></div>`);
+    if(item.externalUrl) facts.push(`<div class="project-fact"><span>公开发布链接</span><p>${external(item,'project-external')}</p></div>`);
+    $('#modalExtra').innerHTML = facts.join('');
+    $('#modalExtra').hidden = !facts.length;
+    modalStage.classList.toggle('text-only-stage',Boolean(item.textOnly));
+    if(item.textOnly) {
+      modalStage.innerHTML = `<div class="text-only-detail"><span class="td-caption">01 / LIVE ACTION · PROJECT PROFILE</span><h3>${esc(item.title)}</h3><p class="td-type">${esc(item.subtitle)}</p><div class="td-fields"><section><h4>项目简介</h4><p>待补充</p></section><section><h4>个人职责</h4><p>${esc(item.responsibilities)}</p></section><section><h4>视频生成工具</h4><p>${esc(item.tools.join(' · '))}</p></section></div></div>`;
+    } else if(item.hasLocalVideo && item.videoPath) {
+      modalStage.innerHTML = video(item,'modal-video');
+    } else {
+      modalStage.innerHTML = `<div class="modal-empty"><span>${esc(item.title)}</span><p>站内视频待接入</p></div>`;
+    }
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden','false');
+    document.body.classList.add('modal-open');
+    $('#modalClose').focus();
+  };
+  const closeModal = () => {
+    modalStage.querySelector('video')?.pause();
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden','true');
+    document.body.classList.remove('modal-open');
+    modalStage.innerHTML = '';
+    modalReturnFocus?.focus?.();
+  };
+  document.addEventListener('click',event => {
+    const button = event.target.closest('[data-open]');
+    if(button) openModal(button.dataset.open,button);
   });
+  $('#modalClose').addEventListener('click',closeModal);
+  modal.addEventListener('click',event => {if(event.target === modal) closeModal();});
+  document.addEventListener('keydown',event => {if(event.key === 'Escape' && modal.classList.contains('open')) closeModal();});
 
+  const menuButton = $('#mobileMenu');
+  const mainNav = $('#mainNav');
+  menuButton.addEventListener('click',() => {
+    const expanded = menuButton.getAttribute('aria-expanded') !== 'true';
+    menuButton.setAttribute('aria-expanded',String(expanded));
+    mainNav.classList.toggle('open',expanded);
+  });
+  $$('#mainNav a').forEach(link => link.addEventListener('click',() => {
+    mainNav.classList.remove('open');
+    menuButton.setAttribute('aria-expanded','false');
+  }));
+  $('#backTop').addEventListener('click',() => window.scrollTo({top:0,behavior:'smooth'}));
+  $('#copyEmail').addEventListener('click',async() => {
+    try {await navigator.clipboard.writeText(config.profile.email); $('#toast').textContent='邮箱已复制';}
+    catch {$('#toast').textContent='请手动复制：'+config.profile.email;}
+    $('#toast').classList.add('show');
+    setTimeout(() => $('#toast').classList.remove('show'),2500);
+  });
+  window.addEventListener('scroll',() => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    $('#scrollMeter').style.width = (max ? Math.min(100,scrollY/max*100) : 0)+'%';
+  },{passive:true});
+  const reveal = new IntersectionObserver(entries => entries.forEach(entry => {
+    if(entry.isIntersecting) {entry.target.classList.add('visible');reveal.unobserve(entry.target);}
+  }),{rootMargin:'0px 0px 40px 0px',threshold:0.02});
+  $$('.reveal').forEach(element => reveal.observe(element));
+  // 所有当前及后续动态插入的 HTML5 播放器都隐藏原生下载入口。
+  const hideDownloads = root => {
+    if(!(root instanceof Element)) return;
+    if(root.matches('video')) root.setAttribute('controlsList','nodownload');
+    root.querySelectorAll('video').forEach(element => element.setAttribute('controlsList','nodownload'));
+  };
+  hideDownloads(document.documentElement);
+  new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(hideDownloads))).observe(document.documentElement,{childList:true,subtree:true});
 })();

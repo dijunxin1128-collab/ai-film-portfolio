@@ -8,11 +8,41 @@
   <title>邸骏昕 · AI 影视作品集</title>
   <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css">
-  <script src="js/projects.js" defer></script>
-  <script src="js/main.js" defer></script>
 </head>
 <body>
-  <div id="app"></div>
-  <noscript><p class="no-script">请启用 JavaScript 以浏览作品集。本页面使用原生 JavaScript 展示项目，不收集访问者信息。</p></noscript>
+<div class="scroll-meter" id="scrollMeter"></div>
+<header class="site-header"><div class="wrap header-inner">
+<a class="brand" href="#top" aria-label="返回首页"><span class="brand-emblem">D</span><span><span class="brand-name">邸骏昕</span><span class="brand-sub">AI FILM · CREATIVE TECH</span></span></a>
+<nav class="header-nav" id="mainNav" aria-label="主导航"><a href="#films">真人影视</a><a href="#software">软件研发</a><a href="#tutorials">自媒体教程</a><a href="#animation">原创动画</a><a href="#contact">联系我</a></nav>
+<button type="button" class="mobile-menu" id="mobileMenu" aria-expanded="false" aria-controls="mainNav">菜单 ☰</button>
+
+</div></header>
+<main id="top">
+<section class="hero"><div class="wrap hero-grid"><div class="hero-main reveal">
+<span class="eyebrow">SELECTED WORKS / FILM × SOFTWARE × AI</span>
+<h1>让影像成为表达。<br><span>让技术服务创作。</span></h1>
+<p class="hero-desc">AI 影视创作、生成式视频工作流与独立软件研发。这里收录我参与的真人影视项目、创作工具、持续更新的 AI 教学内容，以及原创动画作品。</p>
+<div class="hero-cta"><a class="action-primary" href="#films">浏览作品 <span aria-hidden="true">↗</span></a><a class="action-text" href="#contact">合作与联系 →</a></div>
+<div class="hero-stats"><div class="st"><strong>03</strong><span>真人影视项目</span></div><div class="st"><strong>02</strong><span>软件项目</span></div><div class="st"><strong>06</strong><span>AI 教程内容</span></div><div class="st"><strong>01</strong><span>原创动画短片</span></div></div>
+</div><div class="hero-art" aria-hidden="true"><div class="hero-orb"></div><div class="frame f1"><div class="i"></div></div><div class="frame f2"><div class="i"></div></div><div class="frame f3"><div class="i"></div></div><div class="art-side mono">STORY · IMAGINATION · TECHNOLOGY</div><div class="art-tag mono">PORTFOLIO / 2026</div></div></div></section>
+<section class="section" id="films"><div class="wrap"><div class="section-bar reveal"><div class="section-index">01.</div><div><span class="eyebrow">LIVE ACTION / FILM PROJECTS</span><h2 class="section-title">真人影视作品</h2><p class="section-sub">从影视视觉开发到 AI 镜头制作，按项目展示实际创作经历。</p></div><span class="section-right mono">3 PROJECTS / 01—03</span></div><div class="film-grid" id="filmsGrid"></div></div></section>
+<section class="section" id="software"><div class="wrap"><div class="section-bar reveal"><div class="section-index">02.</div><div><span class="eyebrow">SOFTWARE / CREATIVE TOOLS</span><h2 class="section-title">软件研发</h2><p class="section-sub">从真实创作需求出发，独立推进产品规划、功能研发与迭代，用 Claude 和 OpenAI Codex 探索专业影视软件开发。</p></div><span class="section-right mono">2 PRODUCTS / 须弥云镜 + CURA</span></div><div class="software-grid" id="softwareGrid"></div></div></section>
+<section class="section" id="tutorials"><div class="wrap"><div class="section-bar reveal"><div class="section-index">03.</div><div><span class="eyebrow">SELF MEDIA / AI WORKFLOW SERIES</span><h2 class="section-title">自媒体与 AI 视频教学</h2><p class="section-sub">围绕生成式 AI 工具与真实创作工作流，持续分享 AI 影视制作、视觉资产管理与多工具协同的实践方法。</p></div><span class="section-right mono">6 EPISODES / 1 PLAYER</span></div>
+<div class="tutorial-stage reveal"><div class="stage-media" id="stageMedia"><div class="stage-art" id="stageArt"></div><div class="stage-center"><div class="ep-number" id="stageNum">06</div><h3 id="stageTitleArt">你穷你早说啊！</h3><p>CREATOR NOTES / AI WORKFLOW</p></div></div>
+<aside class="stage-side"><span class="stage-kicker mono" id="stageKicker">EPISODE 06 / 06</span><h3 id="stageTitle">你穷你早说啊！</h3><p class="stage-info" id="stageDesc"></p><div class="stage-actions"><a class="mini-link" id="stageExternal" href="#" target="_blank" rel="noopener noreferrer">前往原发布链接 ↗</a></div><div class="stage-bottom"><span id="stageStatus">站内视频可播放</span><div><button id="episodePrev" type="button" aria-label="更新的一期">←</button>&nbsp;&nbsp;<button id="episodeNext" type="button" aria-label="更早的一期">→</button></div></div></aside></div>
+<div class="episode-bar"><strong>全部教程 <span class="fine mono">/ 06</span></strong><div class="carousel-buttons"><button class="circle-btn" id="scrollLeft" type="button" aria-label="向左滚动">←</button><button class="circle-btn" id="scrollRight" type="button" aria-label="向右滚动">→</button></div></div><div class="episode-scroll" id="episodeScroll" aria-label="教程选集"></div><p class="tutorial-subnote">六期教程均可站内播放，点击下方选集切换。</p>
+</div></section>
+<section class="fox" id="animation"><div class="wrap"><div class="section-bar reveal"><div class="section-index">04.</div><div><span class="eyebrow">ORIGINAL ANIMATION / FINALE</span><h2 class="section-title">原创 AI 动画</h2><p class="section-sub">作为作品展示区的最后一部作品，回到独立创作的起点。</p></div><span class="section-right mono">LAST WORK</span></div>
+<div class="fox-feature reveal"><div class="fox-media" id="foxMedia"></div><div class="fox-copy"><span class="eyebrow">ONE LAST STORY / 2025</span><h2>《勇敢的狐狸小橙》</h2><p></p><div class="award"><span>✦ 釜山国际艺术节 · 杰出成就奖</span><span>✦ 北京市大学生动漫设计大赛 · 三等奖</span></div><button class="action-primary" type="button" data-open="little-orange-fox">查看原创动画 <span>↗</span></button></div></div>
+</div></section>
+<section class="contact" id="contact"><div class="wrap contact-grid"><div class="reveal"><span class="eyebrow">LET'S CREATE SOMETHING</span><h2>期待下一次创作。</h2><p>关于影视制作、AI 创作、软件研发与工作机会，欢迎通过邮箱联系。</p></div><div class="reveal"><span class="eyebrow">CONTACT / EMAIL</span><div class="contact-email">2472386299@qq.com</div><button type="button" class="copybtn" id="copyEmail">复制邮箱 ↗</button></div></div></section>
+</main>
+<footer class="footer"><div class="wrap footer-row"><span>邸骏昕 · AI 影视作品集</span><span>FILM / SOFTWARE / TUTORIALS / ANIMATION</span><button type="button" id="backTop">回到顶部 ↑</button></div></footer>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true"><div class="modal-inner"><div class="modal-head"><span class="eyebrow">PROJECT / DETAILS</span><button class="modal-close" type="button" id="modalClose" aria-label="关闭弹窗">✕</button></div><div class="modal-stage" id="modalStage"></div><div class="modal-info"><div><span class="eyebrow" id="modalKicker">PROJECT</span><h3 id="modalTitle">作品</h3><p id="modalDesc"></p><div id="modalExtra" class="project-facts" hidden></div></div></div><div class="modal-bottom"></div></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+
+  <script src="js/projects.js" defer></script>
+  <script src="js/main.js" defer></script>
 </body>
 </html>
