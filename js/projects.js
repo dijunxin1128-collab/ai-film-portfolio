@@ -65,7 +65,7 @@ window.PORTFOLIO = {
     },
     {
       "id": "software",
-      "label": "软件研发"
+      "label": "产品研发"
     },
     {
       "id": "tutorials",
